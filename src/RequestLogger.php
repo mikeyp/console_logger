@@ -9,6 +9,7 @@ namespace Drupal\console_logger;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Component\Utility\Timer;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
@@ -22,7 +23,14 @@ class RequestLogger {
    *
    * @var array
    */
-  public static $blacklistParameters = array('form_build_id', 'pass');
+  public static $blacklistParameters;
+
+  /**
+   * List of Parameters to censored in console logging.
+   *
+   * @var array
+   */
+  public static $censorParameters;
 
   /**
    * The log printer service
@@ -32,13 +40,26 @@ class RequestLogger {
   protected $logPrinter;
 
   /**
+   * The console logger settings.
+   *
+   * @var \Drupal\Core\Config\Config
+   */
+  protected $settings;
+
+  /**
    * Construct a new Request Logger.
    *
    * @param LogPrinter $logPrinter
    *   The log printer service.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface
+   *   The config service.
    */
-  public function __construct(LogPrinter $logPrinter) {
+  public function __construct(LogPrinter $logPrinter, ConfigFactoryInterface $config) {
     $this->logPrinter = $logPrinter;
+    $this->settings =$config->get('console_logger.settings');
+    self::$blacklistParameters = $this->settings->get('blacklist_parameters');
+    self::$censorParameters = $this->settings->get('censor_parameters');
   }
 
   /**
@@ -61,15 +82,29 @@ class RequestLogger {
         $parameters = $request->request->all();
 
         $parameters = $this->sanitizePrameters($parameters);
+        $params = "Request parameters:\n-------------------\n";
+        $params .= Yaml::encode($parameters);
 
-        $this->logPrinter->printToConsole('default', preg_replace('/.*/', "\t$0", Yaml::encode($parameters)));
+
+        $this->logPrinter->printToConsole('default', preg_replace('/.*/', "\t$0", $params));
       }
     }
   }
 
+  /**
+   * @param array $parameters
+   *   An array of parameters to be sanitized.
+   * @return array
+   */
   protected function sanitizePrameters($parameters) {
     foreach (self::$blacklistParameters as $param) {
       unset($parameters[$param]);
+    }
+
+    foreach (self::$censorParameters as $param) {
+      if (isset($parameters[$param])) {
+        $parameters[$param] = "********";
+      }
     }
 
     return $parameters;

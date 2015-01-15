@@ -3,7 +3,7 @@ services:
     class: Drupal\console_logger\LogPrinter
   console_logger.request_logger:
     class: Drupal\console_logger\RequestLogger
-    arguments: [@console_logger.log_printer]
+    arguments: ['@console_logger.log_printer', '@config.factory']
   console_logger.logger:
     class: Drupal\console_logger\Logger\ConsoleLogger
     arguments: ['@logger.log_message_parser', '@console_logger.log_printer']

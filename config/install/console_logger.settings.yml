@@ -1,0 +1,4 @@
+blacklist_parameters:
+  - form_build_id
+censor_parameters:
+  - pass
