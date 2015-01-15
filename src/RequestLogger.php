@@ -97,13 +97,19 @@ class RequestLogger {
    * @return array
    */
   protected function sanitizePrameters($parameters) {
-    foreach (self::$blacklistParameters as $param) {
-      unset($parameters[$param]);
+    foreach ($parameters as $name => $param) {
+      foreach (self::$blacklistParameters as $pattern) {
+        if (!empty($pattern) && preg_match($pattern, $name)) {
+          unset($parameters[$name]);
+        }
+      }
     }
 
-    foreach (self::$censorParameters as $param) {
-      if (isset($parameters[$param])) {
-        $parameters[$param] = "********";
+    foreach ($parameters as $name => $param) {
+      foreach (self::$censorParameters as $pattern) {
+        if (isset($parameters[$name]) && !empty($pattern) && preg_match($pattern, $name)) {
+          $parameters[$name] = "********";
+        }
       }
     }
 
