@@ -9,6 +9,7 @@ namespace Drupal\console_logger\StackMiddleware;
 
 use Drupal\console_logger\RequestLogger;
 use Drupal\Core\DrupalKernelInterface;
+use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
@@ -54,6 +55,7 @@ class RequestLoggerMiddleware implements HttpKernelInterface {
   }
 
   public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE) {
+    Database::startLog('console_logger');
     $this->requestLogger->handleRequest($request, $type);
 
     return $this->httpKernel->handle($request, $type, $catch);

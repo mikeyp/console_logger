@@ -11,6 +11,7 @@ use Drupal\Component\Serialization\Yaml;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Component\Utility\Timer;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
@@ -145,8 +146,7 @@ class RequestLogger {
     $time = Timer::read('page');
     $statusCode = $response->getStatusCode();
     $statusText = Response::$statusTexts[$statusCode];
-    $log = \Drupal\Core\Database\Database::startLog('devel', 'default');
-    $queries = $log->get('devel');
+    $queries = Database::getLog('console_logger', 'default');
 
     $sum = 0;
     foreach ($queries as $query) {
