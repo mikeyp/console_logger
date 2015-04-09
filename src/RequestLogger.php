@@ -8,6 +8,7 @@
 namespace Drupal\console_logger;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Component\Utility\Timer;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -122,6 +123,8 @@ class RequestLogger {
    * @param GetResponseEvent $response_event
    */
   public function terminateRequest(PostResponseEvent $response_event) {
+
+
     $response = $response_event->getResponse();
     if ($response->getStatusCode() >= 500) {
       $color = 'red';
@@ -139,7 +142,25 @@ class RequestLogger {
       $color = 'default';
     }
 
-    $message = sprintf("Completed %s %s in %s ms\n", $response->getStatusCode(), Response::$statusTexts[$response->getStatusCode()], Timer::read('page'));
+    $time = Timer::read('page');
+    $statusCode = $response->getStatusCode();
+    $statusText = Response::$statusTexts[$statusCode];
+    $log = \Drupal\Core\Database\Database::startLog('devel', 'default');
+    $queries = $log->get('devel');
+
+    $sum = 0;
+    foreach ($queries as $query) {
+      $text[] = $query['query'];
+      $sum += $query['time'];
+    }
+
+    $querySummary = SafeMarkup::format('Executed @queries queries in @time ms.',
+      array('@queries' => count($queries), '@time' => round($sum * 1000, 2)));
+
+
+    $this->logPrinter->printToConsole('default', $querySummary);
+
+    $message = sprintf("Completed %s %s in %s ms\n", $statusCode, $statusText, $time);
     $this->logPrinter->printToConsole($color, $message);
 
   }
