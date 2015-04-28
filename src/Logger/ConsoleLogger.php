@@ -9,20 +9,12 @@ namespace Drupal\console_logger\Logger;
 
 use Drupal\console_logger\LogPrinter;
 use Drupal\Core\Logger\RfcLogLevel;
-use JakubOnderka\PhpConsoleColor\ConsoleColor;
 use Drupal\Core\Logger\LogMessageParserInterface;
 use Drupal\Core\Logger\RfcLoggerTrait;
 use Psr\Log\LoggerInterface;
 
 class ConsoleLogger implements LoggerInterface {
   use RfcLoggerTrait;
-
-  /**
-   * The console color service.
-   *
-   * @var \JakubOnderka\PhpConsoleColor\ConsoleColor
-   */
-  protected $console_color;
 
   /**
    * The log message parser service.
@@ -49,7 +41,6 @@ class ConsoleLogger implements LoggerInterface {
    */
   public function __construct(LogMessageParserInterface $logMessageParserInterface, LogPrinter $logPrinter) {
     $this->messageParser = $logMessageParserInterface;
-    $this->console_color = new ConsoleColor();
     $this->logPrinter = $logPrinter;
   }
 

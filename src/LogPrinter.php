@@ -18,14 +18,26 @@ class LogPrinter {
    */
   protected $console_color;
 
-  public function __construct() {
-    $this->console_color = new ConsoleColor();
-  }
-
-
   public function printToConsole($style, $message) {
     if (php_sapi_name() == 'cli-server') {
-      file_put_contents("php://stdout", sprintf("\n%s\n", $this->console_color->apply($style, $message)));
+      file_put_contents("php://stdout", sprintf("\n%s\n", $this->getConsoleColor()->apply($style, $message)));
     }
+  }
+
+  /**
+   * @return ConsoleColor
+   */
+  public function getConsoleColor() {
+    if (!$this->console_color) {
+      $this->console_color = new ConsoleColor();
+    }
+    return $this->console_color;
+  }
+
+  /**
+   * @param ConsoleColor $console_color
+   */
+  public function setConsoleColor($console_color) {
+    $this->console_color = $console_color;
   }
 }
